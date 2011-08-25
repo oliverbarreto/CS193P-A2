@@ -16,19 +16,7 @@
 
 @synthesize display, displayMem, displayOperation, displayTypeOfAngleMetrics;
 @synthesize stateForTypeOfAngleMetricsButton;
-
-
-
-- (CalculatorBrain *)brain {
-    // Revisar si es bueno hacer esto aquí, o dejarlo para  viewDidLoad ???
-    //Lazy instanciation of my Model
-    
-    if (!brain) {
-        brain = [[CalculatorBrain alloc] init];
-    }
-
-    return brain;    
-}
+@synthesize brain;
 
 
 - (BOOL)isDecimalPointValid {
@@ -170,13 +158,15 @@
 
 #pragma mark - View lifecycle
 
-/*
+
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    brain = [[CalculatorBrain alloc] init];
 }
-*/
+
 
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
