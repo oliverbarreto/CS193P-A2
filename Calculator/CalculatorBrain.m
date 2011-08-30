@@ -7,7 +7,12 @@
 //
 
 #import "CalculatorBrain.h"
-#define VARIABLE_PREFIX @"%"
+#define VARIABLE_PREFIX @"_"    //Special Char diferenciates vars from actual operations
+
+
+@interface CalculatorBrain()
+@property (nonatomic, retain) NSMutableArray *internalExpression;
+@end
 
 
 @implementation CalculatorBrain
@@ -19,30 +24,83 @@
 @synthesize myMem;                                      
 @synthesize typeOfAngleMetrics;                         
 @synthesize errorMessage;
+@synthesize myVariables;
+@synthesize internalExpression;
+@synthesize expression;
 
 
-//* *****************************************************************************
-//Basic Model Methods
+#pragma mark - Utility Methods
 
--(void)performWaitingOperation{
+- (void)addItemToInternalExpressionArray:(id)myItem {
+    
+    //If myItem is an Operand, Throw in a NSString with the NSNumber
+    if ([myItem isKindOfClass:[NSNumber class]]) {
+        [self.internalExpression addObject:myItem]; 
+
+    //If myItem is an Operation or a Variable, Throw in a NSSTring 
+    } else if ([myItem isKindOfClass:[NSString class]]) {
+        [self.internalExpression addObject:myItem]; 
+
+    }
+}
+
+
+- (void)performWaitingOperation {
     //realiza la operación pendiente por realizar...
     
     if ([@"+" isEqual:waitingOperation]) {
-        self.operand = self.waitingOperand + self.operand; 
+        operand = self.waitingOperand + operand; 
     } else if ([@"-" isEqual:waitingOperation]) {
-        self.operand = self.waitingOperand - self.operand; 
+        operand = self.waitingOperand - operand; 
     } else if ([@"*" isEqual:self.waitingOperation]) {
-        self.operand = self.waitingOperand * self.operand; 
+        operand = self.waitingOperand * operand; 
     } else if ([@"/" isEqual:waitingOperation]) {
-        if (self.operand){
-            self.operand = self.waitingOperand / self.operand; 
+        if (operand){
+            operand = self.waitingOperand / operand; 
         } else {
             self.errorMessage = [NSString stringWithFormat:@"Error: Div by 0"];
         }
     }
 }
 
+
+#pragma mark - Interface Methods
+
+- (id) expression {
+    //Returns an NSMutableArray as an ID object, so caller cannot idetentified the iVar 
+    return [[internalExpression copy] autorelease];
+}
+
+
+- (void)setOperand:(double)anOperand {
+    
+    // "Throws" the operand in the internalExpression Array
+    
+    [self addItemToInternalExpressionArray:[NSNumber numberWithDouble:anOperand]];
+    //[self.internalExpression addObject:[NSNumber numberWithDouble:anOperand]];
+  
+    // & then set the operand property as usual 
+    operand = anOperand;    
+} 
+
+
+- (void)setVariableAsOperand:(NSString *)variableName {
+
+    // "Throws" the operand in the internalExpression Array
+    //... but before, it Appends the Variable_Prefix 
+
+    [self addItemToInternalExpressionArray:[VARIABLE_PREFIX stringByAppendingString:variableName]];
+    
+    //[self.internalExpression addObject:[VARIABLE_PREFIX stringByAppendingString:variableName]];
+
+}
+
+
 -(double)performOperation:(NSString *)operation{
+
+    // "Throws" the operand in the internalExpression Array
+    [self addItemToInternalExpressionArray:operation];
+    //[self.internalExpression addObject:operation];
 
     //checks for operations of 1 or two operands    
     if ([operation isEqual:@"sqrt"]) {
@@ -92,39 +150,198 @@
     } else if ([operation isEqual:@"Del"]) {
         self.operand = 0;
         
-    } else if ([operation isEqual:@"C"]) {  //Clears everything in brain
+    } else if ([operation isEqual:@"C"]) {      //Clears everything in brain
         self.operand = 0.0;
         self.waitingOperation = @"";
         self.waitingOperand = 0.0;
         self.errorMessage = @"";
-    
+        
+        [self.internalExpression removeAllObjects];
+            
     } else {    
+        
         [self performWaitingOperation];         //execute regular math operation
         self.waitingOperation = operation;      //prepare for next operation
-        self.waitingOperand = self.operand;
+        self.waitingOperand = self.operand;        
     }            
 
     return self.operand;    
 }
 
+#pragma mark - Class Methods
+
++ (BOOL)itemIsAVariable:(NSString * )myStringValue {
+    
+    NSRange myRange = [myStringValue rangeOfString:VARIABLE_PREFIX];
+    
+    //If Item is a Variable NSString with prefix
+    if (myRange.length == 0) return NO;
+    else return YES;
+    
+} 
 
 
-//* *****************************************************************************
-// Standard initialization of model
++ (NSSet *)variablesInExpression:(id)anExpression {
+
+    //Enumerates through anExpression and buildsthe NSSet to be returned back
+    NSMutableSet *myResultSet = nil;
+
+    if ([anExpression isKindOfClass:[NSArray class]]) {
+        for (id myExpressionItem in anExpression) {
+            
+            //If Item is a NSString (Variable or Operation)
+            if ([myExpressionItem  isKindOfClass:[NSString class]]) {
+                
+                //If Item is a Variable NSString with prefix
+                if ([CalculatorBrain itemIsAVariable:myExpressionItem]) {  
+                    
+                    //First Remove the variable prefix
+                    myExpressionItem = [myExpressionItem stringByReplacingOccurrencesOfString:VARIABLE_PREFIX withString:@""];
+
+                    if (!myResultSet) {
+                        myResultSet = [[[NSMutableSet alloc] init ]autorelease]; 
+
+                    } else { 
+                        if  (![myResultSet member:myExpressionItem]) {                
+                            [myResultSet addObject:myExpressionItem];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return myResultSet ;
+}
+
+
++ (NSString *)descriptionOfExpression:(id)anExpression {
+
+    //Enumerates through anExpression and set the right string to be returned back
+    NSString *myDescriptionOfExpression = @"";
+    
+    for (id myExpressionItem in anExpression) {
+        
+        
+        //If Item is a NSNumber
+        if ([myExpressionItem isKindOfClass:[NSNumber class]]) {
+
+            myDescriptionOfExpression = [[myDescriptionOfExpression stringByAppendingString:[myExpressionItem stringValue]] stringByAppendingString:@" "];
+
+            
+        //If Item is a NSString (Variable or Operation)
+        } else if ([myExpressionItem  isKindOfClass:[NSString class]]) {
+            
+            //If Item is a Variable NSString with prefix
+            if ([CalculatorBrain itemIsAVariable:myExpressionItem]) {  
+                
+                NSString *myVariable = [myExpressionItem stringByReplacingOccurrencesOfString:VARIABLE_PREFIX withString:@""]; 
+
+                myDescriptionOfExpression = [myDescriptionOfExpression stringByAppendingString:[NSString stringWithFormat:@"%@ ", myVariable]];
+                
+            
+            //If Item is an Operation NSString
+            } else {                    
+                
+                myDescriptionOfExpression = [myDescriptionOfExpression stringByAppendingString:[NSString stringWithFormat:@"%@ ", myExpressionItem]];
+            }
+        }
+    }
+
+    
+    return myDescriptionOfExpression;
+}
+
+
++ (double)evaluateExpression:(id)anExpression
+         usingVariableValues:(NSDictionary *)variables {
+    
+    double myResult = 0;
+    CalculatorBrain *myEvaluatorBrain;
+    
+    //Create an instance of Calculator Class to be able to access iVars from Class Method
+    myEvaluatorBrain = [[CalculatorBrain alloc] init];  
+    
+    //Enumeration through the expression
+    for (id myExpressionItem in anExpression) {
+        
+        //If Item is a NSNumber
+        if ([myExpressionItem isKindOfClass:[NSNumber class]]) {
+            myEvaluatorBrain.operand = [myExpressionItem doubleValue];
+            
+            //If Item is a NSString (Variable or Operation)
+        } else if ([myExpressionItem  isKindOfClass:[NSString class]]) {
+            
+            //If Item is a Variable NSString with prefix
+            if ([self itemIsAVariable:myExpressionItem]) {  
+                
+                NSString *myVariableKey = [myExpressionItem stringByReplacingOccurrencesOfString:VARIABLE_PREFIX withString:@""]; 
+                
+                [myEvaluatorBrain setOperand:[[variables objectForKey:myVariableKey] doubleValue]];
+                
+                //If Item is an Operation NSString
+            } else {                    
+                
+                [myEvaluatorBrain performOperation:myExpressionItem];
+            }
+        }
+    }
+    
+    // After the expression is evaluated, we call perform "=" operation 
+    [myEvaluatorBrain performOperation:@"="];
+    myResult = myEvaluatorBrain.operand;
+    myEvaluatorBrain = nil;         //Release of self created instance of CalculatorBrain
+    [myEvaluatorBrain release];
+    
+    return myResult;
+    
+}
+
++ (id)propertyListForExpression:(id)anExpression
+{
+    return [[anExpression retain] autorelease];
+}
+
++ (id)expressionForPropertyList:(id)propertyList
+{
+    return [[propertyList retain] autorelease];
+}
+
+
+
+#pragma mark - Init & Dealloc
 
 - (id)init {    // Custom initializator for CalculatorBrain
+
     if (self = [super init]) {
+        //Error State Flag: Empty String = No Error;  
         self.errorMessage = [NSString stringWithFormat:@""];
+
+        
+        //Set initial state of variables values for solving expression
+        self.myVariables = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    [NSNumber numberWithDouble:2.0], @"x",                                         
+                                    [NSNumber numberWithDouble:4.5], @"a",                                             
+                                    [NSNumber numberWithDouble:9.0], @"b", nil];
+
+        //Set initial state of internalExpression Array
+        self.internalExpression = [NSMutableArray array];
+
     }
+    
     return  self;
 }
 
+         
 // Standard dealloc method
--(void)dealloc
-{
+-(void)dealloc {
+    
     [waitingOperation release]; //release of all my self self-created objetcs
     [errorMessage release];
     
+    [myVariables release];
+    [internalExpression release];
+     
     [super dealloc];
 }
 

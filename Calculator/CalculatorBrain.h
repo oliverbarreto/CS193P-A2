@@ -20,17 +20,37 @@
 
     NSString *waitingOperation;     //to do something like "2 + 3 * 5 ="
     NSString *errorMessage;          //Sends Warning & Error Messages to ViewController
+
+    NSDictionary *myVariables;          //Dictionary of variables for solving expression
+    NSMutableArray *internalExpression; //Records Current Expression
 }
 
 //Basic Model Properties
-@property double operand, myMem, waitingOperand;
+@property (nonatomic) double operand;
+@property double myMem, waitingOperand;
 @property BOOL typeOfAngleMetrics;
 @property (nonatomic, retain) NSString *waitingOperation;
 @property (nonatomic, retain) NSString *errorMessage;
+@property (nonatomic, retain) NSDictionary *myVariables;
 
 
-//Basic Model Methods
-- (double)performOperation:(NSString *)operation;   //Basic Operations Management
 
+//@interface CalculatorBrain : NSObject
+//{
+//    double operand;
+//    NSString *waitingOperation;
+//    double waitingOperand;
+//}
+- (void)setOperand:(double)aDouble;
+- (void)setVariableAsOperand:(NSString *)variableName;  
+- (double)performOperation:(NSString *)operation;       //Basic Operations Management
+@property (readonly) id expression;
++ (double)evaluateExpression:(id)anExpression
+         usingVariableValues:(NSDictionary *)variables;
++ (NSSet *)variablesInExpression:(id)anExpression;
++ (NSString *)descriptionOfExpression:(id)anExpression;
++ (id)propertyListForExpression:(id)anExpression;
++ (id)expressionForPropertyList:(id)propertyList;
+//@end
 
 @end

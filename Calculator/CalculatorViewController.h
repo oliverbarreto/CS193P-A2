@@ -16,7 +16,7 @@
     UILabel *displayOperation;                  //displays Current Operation Array
     UILabel *displayTypeOfAngleMetrics;         //displays Deg. vs Rdns state 
 
-    BOOL userIsInTheMiddleOfTyingANumber;       //To know if still typing numbers
+    BOOL userIsInTheMiddleOfTypingANumber;       //To know if still typing numbers
 
     BOOL      stateForTypeOfAngleMetrics;       //To Set Deg vs Rads
     UIButton *stateForTypeOfAngleMetricsButton; 
@@ -34,5 +34,7 @@
 
 - (IBAction)digitPressed:(id)sender;
 - (IBAction)operationPressed:(id)sender;
+- (IBAction)variablePressed:(id)sender;
+- (IBAction)solvePressed:(id)sender;
 
 @end
