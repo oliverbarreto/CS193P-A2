@@ -16,7 +16,7 @@
     double myMem;                   //Basic Memory Operations
     double waitingOperand;          //to keep track of waiting operation when you try 
 
-    BOOL typeOfAngleMetrics;        //FALSE=Degrees;TRUE=Radians
+    BOOL radiansMode;               //FALSE=Degrees;TRUE=Radians
 
     NSString *waitingOperation;     //to do something like "2 + 3 * 5 ="
     NSString *errorMessage;          //Sends Warning & Error Messages to ViewController
@@ -28,12 +28,12 @@
 //Basic Model Properties
 @property (nonatomic) double operand;
 @property double myMem, waitingOperand;
-@property BOOL typeOfAngleMetrics;
+@property BOOL radiansMode;
 @property (nonatomic, retain) NSString *waitingOperation;
 @property (nonatomic, retain) NSString *errorMessage;
 @property (nonatomic, retain) NSDictionary *myVariables;
 
-
+- (NSString *)descriptionOfMyVariables;
 
 //@interface CalculatorBrain : NSObject
 //{

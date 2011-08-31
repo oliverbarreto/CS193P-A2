@@ -14,9 +14,12 @@
 
 @implementation CalculatorViewController
 
-@synthesize display, displayMem, displayOperation, displayTypeOfAngleMetrics;
-@synthesize stateForTypeOfAngleMetricsButton;
 @synthesize brain;
+@synthesize display, displayMem, displayOperation, displayTypeOfAngleMetrics;
+@synthesize radiansModeButton;
+@synthesize editVariableModeEnabledButton;
+
+
 
 #pragma mark - Utility Methods
 
@@ -29,9 +32,9 @@
 }
 
 
-- (void)showAlert {
-    UIAlertView *myAlert = [[UIAlertView alloc] initWithTitle:@"Invalid Operation" 
-                                                      message:self.brain.errorMessage 
+- (void)showAlertWithTitle:(NSString *)myTitle andMessage:(NSString *)myMessage {
+    UIAlertView *myAlert = [[UIAlertView alloc] initWithTitle:myTitle
+                                                      message:myMessage
                                                      delegate:self 
                                             cancelButtonTitle:@"OK" 
                                             otherButtonTitles:nil];
@@ -59,40 +62,34 @@
     //Creates the right setup for Displaying content on all displays on screen
     
     NSString *myOperationDisplayMSG = @"Op: ";
-    NSString static *myTypeOfAngleMetricsMSG = @"Rdn";
+    NSString static *myTypeOfAngleMetricsMSG = @"Deg";
 
     //If there is an error when performing an operation, nothing is updaed
     if (![self.brain.errorMessage isEqual:@""]) {
         myOperationDisplayMSG = self.brain.errorMessage;
-        //[self showAlert];     //if ussing NSAlertView
+        //[self showAlertWithTitle:@"Invalid Operation" andMessage:self.brain.errorMessage];
         self.brain.errorMessage = @"";
     
-    } else {
-        //Test Button for testing Error Conditions of the Model calling AlertView
-        //Just for testing purposes of NSAlertView
-        if ([mySender.titleLabel.text isEqual:@"f"]) {
-            [self showAlert];           
-        } 
-        
+    } else {        
         //Checks state of typeOfAngleMetrics Rdn vs Deg and displays correct info on screen
         if ([mySender.titleLabel.text isEqual:@"Deg"] || [mySender.titleLabel.text isEqual:@"Rdn"]) {
             
             //Change image & text of Deg/Rdn Button & Display Text;  
-            if (stateForTypeOfAngleMetrics) {                       //Radians
-                myTypeOfAngleMetricsMSG = [NSString stringWithFormat:@"Rdn"];
-                stateForTypeOfAngleMetrics = NO;
-                
-                [stateForTypeOfAngleMetricsButton setTitle:@"Deg" forState:UIControlStateNormal];
-                UIImage *myButtonImage = [UIImage imageNamed:@"Button_GreyLight_40.png"];
-                [stateForTypeOfAngleMetricsButton setBackgroundImage:myButtonImage forState:UIControlStateNormal];
-                
-            } else {                                                //Degrees
+            if (self.brain.radiansMode) { //Set state to work in Degrees, Show Button to show Radians text
                 myTypeOfAngleMetricsMSG = [NSString stringWithFormat:@"Deg"];
-                stateForTypeOfAngleMetrics = YES;                
+                self.brain.radiansMode = NO;
                 
-                [stateForTypeOfAngleMetricsButton setTitle:@"Rdn" forState:UIControlStateNormal];
+                [radiansModeButton setTitle:@"Rdn" forState:UIControlStateNormal];
+                //UIImage *myButtonImage = [UIImage imageNamed:@"Button_GreyLight_40.png"];
+                [radiansModeButton setBackgroundImage:nil forState:UIControlStateNormal];
+                
+            } else {    //Set state to work in Radians, Show Button to show Degrees text
+                myTypeOfAngleMetricsMSG = [NSString stringWithFormat:@"Rdn"];
+                self.brain.radiansMode = YES;                
+                
+                [radiansModeButton setTitle:@"Deg" forState:UIControlStateNormal];
                 UIImage *myButtonImage = [UIImage imageNamed:@"Button_GreyDark_40.png"];
-                [stateForTypeOfAngleMetricsButton setBackgroundImage:myButtonImage forState:UIControlStateNormal];
+                [radiansModeButton setBackgroundImage:myButtonImage forState:UIControlStateNormal];
             }   
         }
         
@@ -192,49 +189,95 @@
 
 - (IBAction)variablePressed:(UIButton *)sender{
 
-    NSString *myOperation = sender.titleLabel.text;
+    NSString *myVariablePressed = sender.titleLabel.text;
     
-    if ([myOperation isEqual:@"Fn"]) {        
+    if ([myVariablePressed isEqual:@"Fn"]) {        
         //-- EXTRA CREDIT -- 
         //-- If Fn is Pressed, set/edit the Variable value in Array 
-        //  
+        //Checks state of editVariableModeEnabled and displays correct info on screen
+                
+        //Change image of Fn Button to look like pressed;  
+        if (editVariableModeEnabled) {          //Editing Variables Mode Pressed
+            editVariableModeEnabled = NO;
+                
+            //UIImage *myButtonImage = [UIImage imageNamed:@"Button_GreyLight_40.png"];
+            [editVariableModeEnabledButton setBackgroundImage:nil forState:UIControlStateNormal];
+                
+        } else {                                //Editing Variables Mode NOT Pressed
+            editVariableModeEnabled = YES;                
+                
+            UIImage *myButtonImage = [UIImage imageNamed:@"Button_GreyDark_40.png"];
+            [editVariableModeEnabledButton setBackgroundImage:myButtonImage forState:UIControlStateNormal];
+        }   
         
-    } else if ([myOperation isEqual:@"z"]) {        //Call SetVariableAsOperand:
-        self.display.text = [CalculatorBrain descriptionOfExpression:self.brain.expression];
+    } else if ([myVariablePressed isEqual:@"Vars"]) {        
+        //Test Button for testing Error Conditions of the Model calling AlertView
+        //Just for testing purposes of NSAlertView        
 
+        [self showAlertWithTitle:@"Current Values of Variables" andMessage:[self.brain descriptionOfMyVariables]];
+
+    } else if ([myVariablePressed isEqual:@"Exp"]) {        
+
+        //Shows an AlertView Message with the current expression
+        [self showAlertWithTitle:@"Current Expression" andMessage:[CalculatorBrain descriptionOfExpression:self.brain.expression]];
+        
+        
     } else {    //If there is an Variable in expression, displays expression
-        
-        //if user is typing a number (not zero),multiply the number times the variable, 8x = 8 * X
-        if ((userIsInTheMiddleOfTypingANumber) && (![self.display.text isEqual:@"0"])) {
-            [self.brain setOperand:[self.display.text doubleValue]];
-            [self.brain performOperation:@"*"];
-        }
 
-        userIsInTheMiddleOfTypingANumber = NO;
-        
-        if ([myOperation isEqual:@"x"]) {               //Call SetVariableAsOperand:
-            [self.brain setVariableAsOperand:@"x"];
-            self.displayOperation.text = @"Op: ";
-        
-        } else if ([myOperation isEqual:@"a"]) {        //Call SetVariableAsOperand:
-            [self.brain setVariableAsOperand:@"a"];
-            self.displayOperation.text = @"Op: ";
-        
-        } else if ([myOperation isEqual:@"b"]) {        //Call SetVariableAsOperand:
-            [self.brain setVariableAsOperand:@"b"];
-            self.displayOperation.text = @"Op: ";
-        }
-        
-        
-        if ([CalculatorBrain variablesInExpression:self.brain.expression]) {
+        if (!editVariableModeEnabled) {
+            //if user is typing a number (not zero),multiply the number times the variable, 8x = 8 * X
+            if ((userIsInTheMiddleOfTypingANumber) && (![self.display.text isEqual:@"0"])) {
+                [self.brain setOperand:[self.display.text doubleValue]];
+                [self.brain performOperation:@"*"];
+            }
             
-            self.display.text = [CalculatorBrain descriptionOfExpression:self.brain.expression];
-            self.displayOperation.text = @"Op: ";
+            userIsInTheMiddleOfTypingANumber = NO;
             
+            if ([myVariablePressed isEqual:@"x"]) {               //Call SetVariableAsOperand:
+                [self.brain setVariableAsOperand:@"x"];
+                self.displayOperation.text = @"Op: ";
+                
+            } else if ([myVariablePressed isEqual:@"a"]) {        //Call SetVariableAsOperand:
+                [self.brain setVariableAsOperand:@"a"];
+                self.displayOperation.text = @"Op: ";
+                
+            } else if ([myVariablePressed isEqual:@"b"]) {        //Call SetVariableAsOperand:
+                [self.brain setVariableAsOperand:@"b"];
+                self.displayOperation.text = @"Op: ";
+            }
+            
+            
+            if ([CalculatorBrain variablesInExpression:self.brain.expression]) {
+                
+                self.display.text = [CalculatorBrain descriptionOfExpression:self.brain.expression];
+                self.displayOperation.text = @"Op: ";
+                
+            } else {
+                //TODO - Pendiente de revisar si sigue funcionando TODO igual
+                self.displayOperation.text = @"No Variables in Expression"; 
+            }
+
         } else {
-            //TODO - Pendiente de revisar si sigue funcionando TODO igual
-            self.displayOperation.text = @"No Variables in Expression"; 
+            
+            //Set variable value, if there is a number on screen (zero is not allowed)
+            if ((userIsInTheMiddleOfTypingANumber) && (![self.display.text isEqual:@"0"])) {
+                
+                NSMutableDictionary *myMutableVariables = [[NSMutableDictionary alloc] initWithDictionary:self.brain.myVariables copyItems:YES];
+                
+                if ([myMutableVariables objectForKey:myVariablePressed]) {
+                    [myMutableVariables setObject:[NSNumber numberWithDouble:[self.display.text doubleValue]] forKey:myVariablePressed];
+                
+                }
+                 
+                self.brain.myVariables = [myMutableVariables autorelease];
+                
+                myMutableVariables = nil;
+                //[myMutableVariables release];
+            }
+            
+            userIsInTheMiddleOfTypingANumber = NO;
         }
+                
     }        
 }
 
@@ -268,35 +311,40 @@
 }
 
 
-//Utility methods for cleaning up  memory when finished
--(void)releaseNilsOfOutlets {
+-(void)releaseNilsOfOutlets {   //Utility methods for cleaning up  memory when finished
     self.display = nil;
     self.displayMem = nil;
     self.displayOperation = nil;
-    self.stateForTypeOfAngleMetricsButton = nil;
+    self.displayTypeOfAngleMetrics = nil;
+    self.radiansModeButton = nil;
+    self.editVariableModeEnabledButton = nil;
 }
 
--(void)releaseMemOfOutlets {
+-(void)releaseMemOfOutlets {    //Utility methods for cleaning up  memory when finished
     [display release];
     [displayMem release];
     [displayOperation release];
-    [stateForTypeOfAngleMetricsButton release];
+    [displayTypeOfAngleMetrics release];
+    [radiansModeButton release];
+    [editVariableModeEnabledButton release];
 }
 
 - (void)viewDidUnload {
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
+
+    // Releasing my own created IBOutlet objects
     [self releaseNilsOfOutlets];
     
     [super viewDidUnload];
 }
 
 - (void)dealloc {
-    // Releasing my own created objects
-    [brain release];  
     
     // Releasing my own created IBOutlet objects
+    [self releaseNilsOfOutlets];
     [self releaseMemOfOutlets];
+
+    // Releasing my own created objects
+    [brain release];  
     
     [super dealloc];
 }

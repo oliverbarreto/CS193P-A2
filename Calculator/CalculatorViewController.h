@@ -16,21 +16,22 @@
     UILabel *displayOperation;                  //displays Current Operation Array
     UILabel *displayTypeOfAngleMetrics;         //displays Deg. vs Rdns state 
 
-    BOOL userIsInTheMiddleOfTypingANumber;       //To know if still typing numbers
+    BOOL userIsInTheMiddleOfTypingANumber;      //To know if still typing numbers
 
-    BOOL      stateForTypeOfAngleMetrics;       //To Set Deg vs Rads
-    UIButton *stateForTypeOfAngleMetricsButton; 
+    UIButton *radiansModeButton;                //Set Mode: Deg vs Rads
     
     CalculatorBrain *brain;                     //My Model 
 
+    BOOL editVariableModeEnabled;               //Set Mode for setting variables values
+    UIButton *editVariableModeEnabledButton;
 }
 
-//@property BOOL userIsInTheMiddleOfTyingANumber, stateForTypeOfAngleMetrics;
+//@property BOOL userIsInTheMiddleOfTyingANumber, stateForTypeOfAngleMetrics, editVariableModeEnabled;
 
 @property (nonatomic, retain) IBOutlet UILabel *display, *displayMem,*displayOperation;
 @property (nonatomic, retain) IBOutlet UILabel *displayTypeOfAngleMetrics;
-@property (nonatomic, retain) IBOutlet UIButton *stateForTypeOfAngleMetricsButton;
-
+@property (nonatomic, retain) IBOutlet UIButton *radiansModeButton;
+@property (nonatomic, retain) IBOutlet UIButton *editVariableModeEnabledButton;
 
 - (IBAction)digitPressed:(id)sender;
 - (IBAction)operationPressed:(id)sender;

@@ -1,6 +1,7 @@
 Completed:
 - Required:
 	- A2.1: I already have everything using properties in my model, even my Brain as a private property since Calculator A1
+
 	- A2.2: Fixed all Memory Problems since Calculator A1
 
 	- A2.1 - A2.5: Fully Functional
@@ -9,11 +10,18 @@ Completed:
 - Extra Credit:
 	- A2.1: All my IBOutlets work as properties & they are dealloc and set to nil en ViewDidUnload
 	- A2.2: Init brain in ViewDidLoad, not lazy instanciated, in Controller
+
+	- Added 1: 	Exp: shows an UIAlertView with current expression
+				Vars: shows an UIAlertView with current values of variables
+				Fn: edit mode for setting variable values
+				
  
 
 Known Bugs:
 	- None !!!
-	- Functionallity bug: operations of 1 operands do not show correctly, but work fine
+	- Functionallity bug: 
+		- operations of 1 operands do not show correctly because of not using parenthesis, but work fine
+		- 
 
 
 Assignment 2:

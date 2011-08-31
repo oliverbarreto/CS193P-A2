@@ -22,7 +22,7 @@
 
 @synthesize operand, waitingOperand,waitingOperation;   
 @synthesize myMem;                                      
-@synthesize typeOfAngleMetrics;                         
+@synthesize radiansMode;                         
 @synthesize errorMessage;
 @synthesize myVariables;
 @synthesize internalExpression;
@@ -44,16 +44,35 @@
     }
 }
 
+- (NSString *)descriptionOfMyVariables {
+    
+    //Enumerates through Property of MyVariables and set the right string to be returned back
+    NSString *myDescriptionOfMyVariables = @"";
+
+    for (id myItem in self.myVariables) {
+        NSString *myItemValue = [[self.myVariables objectForKey:myItem] stringValue];
+
+        myDescriptionOfMyVariables = [myDescriptionOfMyVariables stringByAppendingString:[NSString stringWithFormat:@"Var %@ = %@, \n", myItem, myItemValue]]; 
+    }
+
+    return myDescriptionOfMyVariables;
+    
+    [myDescriptionOfMyVariables autorelease];
+}
+
 
 - (void)performWaitingOperation {
     //realiza la operación pendiente por realizar...
     
     if ([@"+" isEqual:waitingOperation]) {
         operand = self.waitingOperand + operand; 
+        
     } else if ([@"-" isEqual:waitingOperation]) {
-        operand = self.waitingOperand - operand; 
+         operand = self.waitingOperand - operand; 
+
     } else if ([@"*" isEqual:self.waitingOperation]) {
         operand = self.waitingOperand * operand; 
+    
     } else if ([@"/" isEqual:waitingOperation]) {
         if (operand){
             operand = self.waitingOperand / operand; 
@@ -131,18 +150,18 @@
         self.operand = self.operand - self.myMem;
         
     } else if ([operation isEqual:@"Sin"]) {
-        if (!typeOfAngleMetrics) {
-            self.operand = sin((self.operand * M_PI)/180);  //Using Degrees as argument
-        } else { 
+        if (self.radiansMode) {
             self.operand = sin(self.operand);               //Using Radians as argument
+        } else { 
+            self.operand = sin((self.operand * M_PI)/180);  //Using Degrees as argument
         }
         
     } else if ([operation isEqual:@"Cos"]) {
-        if (!typeOfAngleMetrics) {
-            self.operand = cos((self.operand * M_PI)/180);  //Using Degrees as argument
-        } else { 
+        if (self.radiansMode) {
             self.operand = cos(self.operand);               //Using Radians as argument
-        }
+        } else { 
+            self.operand = cos((self.operand * M_PI)/180);  //Using Degrees as argument
+}
         
     } else if ([operation isEqual:@"+/-"]) {
         self.operand =  - self.operand;
@@ -155,6 +174,7 @@
         self.waitingOperation = @"";
         self.waitingOperand = 0.0;
         self.errorMessage = @"";
+        self.myMem = 0;
         
         [self.internalExpression removeAllObjects];
             
@@ -250,6 +270,7 @@
 
     
     return myDescriptionOfExpression;
+    //[myDescriptionOfExpression autorelease];
 }
 
 
@@ -290,7 +311,9 @@
     // After the expression is evaluated, we call perform "=" operation 
     [myEvaluatorBrain performOperation:@"="];
     myResult = myEvaluatorBrain.operand;
-    myEvaluatorBrain = nil;         //Release of self created instance of CalculatorBrain
+
+    //Release of self created instance of CalculatorBrain
+    myEvaluatorBrain = nil;         
     [myEvaluatorBrain release];
     
     return myResult;
@@ -333,13 +356,19 @@
 }
 
          
-// Standard dealloc method
 -(void)dealloc {
     
-    [waitingOperation release]; //release of all my self self-created objetcs
+    //release of all my self self-created objetcs
+    waitingOperation = nil;
+    [waitingOperation release]; 
+    
+    errorMessage =nil;
     [errorMessage release];
     
+    myVariables =nil;
     [myVariables release];
+    
+    internalExpression = nil;
     [internalExpression release];
      
     [super dealloc];
