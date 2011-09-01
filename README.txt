@@ -16,12 +16,12 @@ Completed:
 				Fn: edit mode for setting variable values
 				
  
-
 Known Bugs:
-	- None !!!
 	- Functionallity bug: 
-		- operations of 1 operands do not show correctly because of not using parenthesis, but work fine
-		- 
+		- operations of 1 operands do not show correctly because of not using parenthesis, but work fine… Revised and fixed !!! now current expression don't adds the whole set of sub-expression for 1 operand operations… now 
+- x Cos = x cos 			and not 	x Cos 0 = 1
+- 5 del 9 Sqrt = 3  		and not  	5 del 9 sqrt 3 = 3
+		
 
 
 Assignment 2:

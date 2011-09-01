@@ -18,12 +18,12 @@
 
     BOOL userIsInTheMiddleOfTypingANumber;      //To know if still typing numbers
 
-    UIButton *radiansModeButton;                //Set Mode: Deg vs Rads
-    
     CalculatorBrain *brain;                     //My Model 
 
     BOOL editVariableModeEnabled;               //Set Mode for setting variables values
     UIButton *editVariableModeEnabledButton;
+
+    UIButton *radiansModeButton;                //Set Mode: Deg vs Rads
 }
 
 //@property BOOL userIsInTheMiddleOfTyingANumber, stateForTypeOfAngleMetrics, editVariableModeEnabled;

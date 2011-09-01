@@ -270,9 +270,8 @@
                 }
                  
                 self.brain.myVariables = [myMutableVariables autorelease];
-                
+                //[myMutableVariables autorelease];
                 myMutableVariables = nil;
-                //[myMutableVariables release];
             }
             
             userIsInTheMiddleOfTypingANumber = NO;
@@ -320,15 +319,6 @@
     self.editVariableModeEnabledButton = nil;
 }
 
--(void)releaseMemOfOutlets {    //Utility methods for cleaning up  memory when finished
-    [display release];
-    [displayMem release];
-    [displayOperation release];
-    [displayTypeOfAngleMetrics release];
-    [radiansModeButton release];
-    [editVariableModeEnabledButton release];
-}
-
 - (void)viewDidUnload {
 
     // Releasing my own created IBOutlet objects
@@ -341,7 +331,6 @@
     
     // Releasing my own created IBOutlet objects
     [self releaseNilsOfOutlets];
-    [self releaseMemOfOutlets];
 
     // Releasing my own created objects
     [brain release];  

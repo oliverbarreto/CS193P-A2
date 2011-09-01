@@ -40,7 +40,6 @@
     //If myItem is an Operation or a Variable, Throw in a NSSTring 
     } else if ([myItem isKindOfClass:[NSString class]]) {
         [self.internalExpression addObject:myItem]; 
-
     }
 }
 
@@ -56,8 +55,6 @@
     }
 
     return myDescriptionOfMyVariables;
-    
-    [myDescriptionOfMyVariables autorelease];
 }
 
 
@@ -109,9 +106,6 @@
     //... but before, it Appends the Variable_Prefix 
 
     [self addItemToInternalExpressionArray:[VARIABLE_PREFIX stringByAppendingString:variableName]];
-    
-    //[self.internalExpression addObject:[VARIABLE_PREFIX stringByAppendingString:variableName]];
-
 }
 
 
@@ -119,60 +113,59 @@
 
     // "Throws" the operand in the internalExpression Array
     [self addItemToInternalExpressionArray:operation];
-    //[self.internalExpression addObject:operation];
 
     //checks for operations of 1 or two operands    
     if ([operation isEqual:@"sqrt"]) {
-        if (self.operand >= 0 ) {
-            self.operand = sqrt(self.operand);
+        if (operand >= 0 ) {
+            operand = sqrt(self.operand);
         } else {
             self.errorMessage = [NSString stringWithFormat:@"Error: Sqrt of Negative Numbers is not implemented"];
       }
     } else if ([operation isEqual:@"1/x"]) {
-        if (self.operand) {
-            self.operand = 1 / self.operand;
+        if (operand) {
+            operand = 1 / self.operand;
         } else {
             self.errorMessage = [NSString stringWithFormat:@"Error: Div by 0"];
       }
     } else if ([operation isEqual:@"π"]) {
-        self.operand = M_PI;
+        operand = M_PI;
         
     } else if ([operation isEqual:@"M"]) {
         self.myMem = self.operand;
 
     } else if ([operation isEqual:@"MR"]) {
-        self.operand = self.myMem;
+        operand = self.myMem;
         
     } else if ([operation isEqual:@"M+"]) {
         self.operand = self.operand + self.myMem;
         
     } else if ([operation isEqual:@"M-"]) {
-        self.operand = self.operand - self.myMem;
+        operand = self.operand - self.myMem;
         
     } else if ([operation isEqual:@"Sin"]) {
         if (self.radiansMode) {
-            self.operand = sin(self.operand);               //Using Radians as argument
+            operand = sin(self.operand);               //Using Radians as argument
         } else { 
-            self.operand = sin((self.operand * M_PI)/180);  //Using Degrees as argument
+            operand = sin((self.operand * M_PI)/180);  //Using Degrees as argument
         }
         
     } else if ([operation isEqual:@"Cos"]) {
         if (self.radiansMode) {
-            self.operand = cos(self.operand);               //Using Radians as argument
+            operand = cos(self.operand);               //Using Radians as argument
         } else { 
-            self.operand = cos((self.operand * M_PI)/180);  //Using Degrees as argument
+            operand = cos((self.operand * M_PI)/180);  //Using Degrees as argument
 }
         
     } else if ([operation isEqual:@"+/-"]) {
-        self.operand =  - self.operand;
+        operand =  - self.operand;
 
     } else if ([operation isEqual:@"Del"]) {
-        self.operand = 0;
+        operand = 0;
         
     } else if ([operation isEqual:@"C"]) {      //Clears everything in brain
-        self.operand = 0.0;
-        self.waitingOperation = @"";
-        self.waitingOperand = 0.0;
+        operand = 0.0;
+        waitingOperation = @"";
+        waitingOperand = 0.0;
         self.errorMessage = @"";
         self.myMem = 0;
         
@@ -195,19 +188,19 @@
     NSRange myRange = [myStringValue rangeOfString:VARIABLE_PREFIX];
     
     //If Item is a Variable NSString with prefix
-    if (myRange.length == 0) return NO;
-    else return YES;
-    
+    if (myRange.length == 0)    return NO;
+    else                        return YES;
 } 
 
 
 + (NSSet *)variablesInExpression:(id)anExpression {
 
     //Enumerates through anExpression and buildsthe NSSet to be returned back
-    NSMutableSet *myResultSet = nil;
+    NSMutableSet *myResultSet = [[NSMutableSet alloc] init];
+    
+    if ([anExpression isKindOfClass:[NSArray class]]) {     //Security check
 
-    if ([anExpression isKindOfClass:[NSArray class]]) {
-        for (id myExpressionItem in anExpression) {
+        for (id myExpressionItem in anExpression) {         //Iterator over anExpression
             
             //If Item is a NSString (Variable or Operation)
             if ([myExpressionItem  isKindOfClass:[NSString class]]) {
@@ -218,20 +211,22 @@
                     //First Remove the variable prefix
                     myExpressionItem = [myExpressionItem stringByReplacingOccurrencesOfString:VARIABLE_PREFIX withString:@""];
 
-                    if (!myResultSet) {
-                        myResultSet = [[[NSMutableSet alloc] init ]autorelease]; 
-
-                    } else { 
-                        if  (![myResultSet member:myExpressionItem]) {                
-                            [myResultSet addObject:myExpressionItem];
-                        }
+                    if  (![myResultSet member:myExpressionItem]) {                
+                        [myResultSet addObject:myExpressionItem];
                     }
                 }
             }
         }
     }
-    
-    return myResultSet ;
+
+    //Return nil if no variables are found in expression
+    if ([myResultSet count] == 0) {
+        [myResultSet release];
+        myResultSet = nil;
+    } else {
+        [myResultSet autorelease];
+    }
+    return myResultSet;
 }
 
 
@@ -267,21 +262,16 @@
             }
         }
     }
-
-    
     return myDescriptionOfExpression;
-    //[myDescriptionOfExpression autorelease];
 }
 
 
 + (double)evaluateExpression:(id)anExpression
          usingVariableValues:(NSDictionary *)variables {
     
-    double myResult = 0;
-    CalculatorBrain *myEvaluatorBrain;
-    
     //Create an instance of Calculator Class to be able to access iVars from Class Method
-    myEvaluatorBrain = [[CalculatorBrain alloc] init];  
+    CalculatorBrain *myEvaluatorBrain = [[CalculatorBrain alloc] init];  
+    double myResult = 0;
     
     //Enumeration through the expression
     for (id myExpressionItem in anExpression) {
@@ -300,7 +290,7 @@
                 
                 [myEvaluatorBrain setOperand:[[variables objectForKey:myVariableKey] doubleValue]];
                 
-                //If Item is an Operation NSString
+            //If Item is an Operation NSString
             } else {                    
                 
                 [myEvaluatorBrain performOperation:myExpressionItem];
@@ -313,8 +303,8 @@
     myResult = myEvaluatorBrain.operand;
 
     //Release of self created instance of CalculatorBrain
-    myEvaluatorBrain = nil;         
     [myEvaluatorBrain release];
+    myEvaluatorBrain = nil;         
     
     return myResult;
     
@@ -344,32 +334,29 @@
         //Set initial state of variables values for solving expression
         self.myVariables = [NSDictionary dictionaryWithObjectsAndKeys:
                                     [NSNumber numberWithDouble:2.0], @"x",                                         
-                                    [NSNumber numberWithDouble:4.5], @"a",                                             
-                                    [NSNumber numberWithDouble:9.0], @"b", nil];
+                                    [NSNumber numberWithDouble:3.0], @"a",                                             
+                                    [NSNumber numberWithDouble:4.0], @"b", nil];
 
         //Set initial state of internalExpression Array
         self.internalExpression = [NSMutableArray array];
-
     }
-    
     return  self;
 }
 
          
 -(void)dealloc {
-    
-    //release of all my self self-created objetcs
-    waitingOperation = nil;
+    //release of all my self self-created iVars & Properties Objects
     [waitingOperation release]; 
-    
-    errorMessage =nil;
+    waitingOperation = nil;
+
     [errorMessage release];
+    errorMessage = nil;
     
-    myVariables =nil;
     [myVariables release];
+    myVariables = nil;
     
-    internalExpression = nil;
     [internalExpression release];
+    internalExpression = nil;
      
     [super dealloc];
 }
